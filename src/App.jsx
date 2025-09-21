@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import { AppShell } from '@mantine/core';
+import { AuthProvider } from './context/AuthContext.jsx';
 
-function App() {
-  const [count, setCount] = useState(0)
+import Main from './pages/Main.jsx';
+import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
+import Learn from './pages/Learn.jsx';
+import Review from './pages/Review.jsx';
 
+import Sidebar from './components/Sidebar.jsx';
+
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <AuthProvider>
+      <AppShell
+        padding="md"
+        navbar={{ width: 80 }}
+      >
+        <AppShell.Navbar>
+          <Sidebar />
+        </AppShell.Navbar>
 
-export default App
+        <AppShell.Main>
+          <Routes>
+            <Route path="/" element={<Main />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route path="/review" element={<Review />} />
+          </Routes>
+        </AppShell.Main>
+      </AppShell>
+    </AuthProvider>
+  );
+}
