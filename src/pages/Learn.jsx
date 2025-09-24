@@ -1,9 +1,10 @@
-import { Container, Title, Text } from '@mantine/core';
+import { Container } from "@mantine/core";
+import LearnSystem from "../components/LearnSystem"
+
 export default function Learn() {
   return (
     <Container size="lg" py="xl">
-      <Title order={2}>Learn</Title>
-      <Text c="dimmed">Coming soon – pick a course and start learning.</Text>
+      <LearnSystem />
     </Container>
   );
 }

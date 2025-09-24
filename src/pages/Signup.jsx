@@ -23,7 +23,7 @@ export default function Signup() {
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
-      const data = await signup(values); // server sets cookie
+      const data = await signup(values); 
       notifications.show({ message: 'Account created! 🎉' });
       onLoggedIn(data?.user);
       nav('/');

@@ -5,20 +5,21 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
+  // Restore user from localStorage on app load
   useEffect(() => {
-    const authed = localStorage.getItem("learnify_authed");
-    if (authed === "1") {
-      setUser({ name: "placeholder" }); // or fetch real user
+    const saved = localStorage.getItem("user");
+    if (saved) {
+      setUser(JSON.parse(saved));
     }
   }, []);
 
   function onLoggedIn(userData) {
-    localStorage.setItem("learnify_authed", "1");
-    setUser(userData || { name: "Guest" });
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
   }
 
   function onLoggedOut() {
-    localStorage.removeItem("learnify_authed");
+    localStorage.removeItem("user");
     setUser(null);
   }
 

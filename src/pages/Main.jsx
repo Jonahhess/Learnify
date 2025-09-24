@@ -7,7 +7,7 @@ export default function Main() {
       <Flex
         align="center"
         justify="center"
-        style={{ minHeight: '80vh' }} // vertically center
+        style={{ minHeight: '80vh' }}
       >
         <Paper
           radius="lg"

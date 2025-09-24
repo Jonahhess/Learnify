@@ -35,12 +35,15 @@ export default function Login() {
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
-      const data = await login(values);
-      notifications.show({ message: 'Welcome back! ✅' });
-      onLoggedIn(data?.user);
-      nav('/');
+      const data = await login(values); 
+      console.log(data)
+      notifications.show({ message: "Welcome back! ✅" });
+
+      onLoggedIn(data.user);
+
+      nav("/");
     } catch (e) {
-      notifications.show({ color: 'red', message: e.message });
+      notifications.show({ color: "red", message: e.message });
     } finally {
       setLoading(false);
     }

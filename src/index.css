@@ -1,4 +1,3 @@
-/* === Base reset & sensible defaults (Mantine-friendly) === */
 *,
 *::before,
 *::after {
@@ -9,7 +8,6 @@ html, body, #root {
   height: 100%;
 }
 
-/* Keep fonts simple; Mantine will override fonts in MantineProvider if you set them */
 :root {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.5;
@@ -18,7 +16,6 @@ html, body, #root {
   text-rendering: optimizeLegibility;
 }
 
-/* Let Mantine drive color scheme; don't hardcode dark/light backgrounds here */
 body {
   margin: 0;
   background: transparent;
