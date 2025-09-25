@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import CourseList from "./CourseList.jsx";
 import CoursewarePage from "./CoursewarePage.jsx";
 import { getCourses, getCoursewares } from "../api/courses.js";
+import { generateCoursewareFromTitle } from "../api/ai.js";
 
 export default function LearnSystem() {
   const { user } = useAuth();
@@ -34,6 +35,36 @@ export default function LearnSystem() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleSelectCourse(course) {
+    console.log(course);
+    setLoading(true);
+    setSelectedCourse(course);
+
+    // Find the user's courseware for this course
+    const userCW = (user.myCurrentCoursewares || []).find(
+      (cw) => String(cw.courseId) === String(course.courseId)
+    );
+
+    // If courseware doesn't exist, generate it
+    if (!userCW?.coursewareId && userCW?.title) {
+      try {
+        await generateCoursewareFromTitle(
+          course.title,
+          course.courseId,
+          userCW.title
+        );
+        await loadData();
+        await reloadUser();
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+        return;
+      }
+    }
+
+    setLoading(false);
   }
 
   function getCurrentCourses() {
@@ -92,7 +123,11 @@ export default function LearnSystem() {
     const currentCW = getCurrentCoursewareForUser(selectedCourse.courseId);
     return (
       <Container size="lg" py="xl">
-        <Button variant="subtle" mb="md" onClick={() => setSelectedCourse(null)}>
+        <Button
+          variant="subtle"
+          mb="md"
+          onClick={() => setSelectedCourse(null)}
+        >
           ← Back to Courses
         </Button>
         <Title order={2} mb="md">
@@ -129,7 +164,7 @@ export default function LearnSystem() {
       <CourseList
         courses={showNewCourses ? getAvailableCourses() : getCurrentCourses()}
         coursewares={coursewares}
-        onSelectCourse={(course) => setSelectedCourse(course)}
+        onSelectCourse={(course) => handleSelectCourse(course)}
       />
     </Container>
   );
