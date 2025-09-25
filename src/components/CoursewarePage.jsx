@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Title, Text, Button, Group, Radio, Stack, Loader, Center } from "@mantine/core";
+import {
+  Title,
+  Text,
+  Button,
+  Group,
+  Radio,
+  Stack,
+  Loader,
+  Center,
+} from "@mantine/core";
 import { getQuestionsByCourseware } from "../api/questions.js";
 import "./CoursewarePage.css";
 import { submitCourseware } from "../api/coursewares.js";
@@ -38,7 +47,9 @@ function buildHighlightedText(text, wrongQuestions, colorMap) {
     const color = colorMap[q._id] || pastelColors[idx % pastelColors.length];
 
     if (lastIndex < start) {
-      parts.push(<span key={`text-${lastIndex}`}>{text.slice(lastIndex, start)}</span>);
+      parts.push(
+        <span key={`text-${lastIndex}`}>{text.slice(lastIndex, start)}</span>
+      );
     }
 
     parts.push(
@@ -70,7 +81,7 @@ export default function CoursewarePage({ courseware }) {
   const [score, setScore] = useState(null);
   const [wrongQuestions, setWrongQuestions] = useState([]);
   const [colorMap, setColorMap] = useState({});
-  const { user } = useAuth();
+  const { user, reloadUser } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -80,7 +91,10 @@ export default function CoursewarePage({ courseware }) {
 
         const withOptions = data.map((q) => ({
           ...q,
-          options: shuffleArray([q.correctAnswer, ...(q.incorrectAnswers || [])]),
+          options: shuffleArray([
+            q.correctAnswer,
+            ...(q.incorrectAnswers || []),
+          ]),
         }));
 
         setQuestions(withOptions);
@@ -116,9 +130,9 @@ export default function CoursewarePage({ courseware }) {
   function getOptionColor(q, option) {
     if (!submitted) return "blue";
 
-    if (option === q.correctAnswer) return "green"; 
-    if (answers[q._id] === option) return "red";    
-    return "gray";                                 
+    if (option === q.correctAnswer) return "green";
+    if (answers[q._id] === option) return "red";
+    return "gray";
   }
 
   async function handleSubmit() {
@@ -141,11 +155,12 @@ export default function CoursewarePage({ courseware }) {
     const finalScore = Math.round((correctCount / questions.length) * 100);
     setScore(finalScore);
     setWrongQuestions(wrong);
-    setColorMap(newColorMap); 
+    setColorMap(newColorMap);
 
     if (finalScore >= 80) {
       try {
         await submitCourseware(user._id, courseware._id);
+        await reloadUser();
         console.log("✅ Courseware submitted successfully");
       } catch (err) {
         console.error("❌ Failed to submit courseware:", err);
@@ -171,7 +186,10 @@ export default function CoursewarePage({ courseware }) {
       <Text
         mb="sm"
         style={{
-          backgroundColor: submitted && wrongQuestions.includes(q) ? colorMap[q._id] : "transparent",
+          backgroundColor:
+            submitted && wrongQuestions.includes(q)
+              ? colorMap[q._id]
+              : "transparent",
           padding: "6px 10px",
           borderRadius: "6px",
         }}
@@ -189,7 +207,11 @@ export default function CoursewarePage({ courseware }) {
             <Radio
               key={i}
               value={option}
-              label={<span style={{ color: getOptionColor(q, option) }}>{option}</span>}
+              label={
+                <span style={{ color: getOptionColor(q, option) }}>
+                  {option}
+                </span>
+              }
               disabled={submitted}
             />
           ))}
@@ -222,7 +244,9 @@ export default function CoursewarePage({ courseware }) {
         <div style={{ marginTop: "20px" }}>
           <Text fw={700}>Your Score: {score}%</Text>
           {score >= 80 ? (
-            <Text c="green">✅ Congratulations! You passed this courseware.</Text>
+            <Text c="green">
+              ✅ Congratulations! You passed this courseware.
+            </Text>
           ) : (
             <Text c="red">❌ You did not pass. Try again!</Text>
           )}
