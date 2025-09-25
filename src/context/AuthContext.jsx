@@ -1,16 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { getUserById } from "../api/users";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("user");
-    if (saved) {
-      setUser(JSON.parse(saved));
-    }
-  }, []);
 
   function onLoggedIn(userData) {
     localStorage.setItem("user", JSON.stringify(userData));
@@ -22,8 +16,17 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
+  async function reloadUser() {
+    try {
+      const freshUser = await getUserById(user._id);
+      setUser(freshUser);
+    } catch (err) {
+      console.error("Failed to reload user:", err);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, onLoggedIn, onLoggedOut }}>
+    <AuthContext.Provider value={{ user, onLoggedIn, onLoggedOut, reloadUser }}>
       {children}
     </AuthContext.Provider>
   );
