@@ -1,11 +1,10 @@
-import { jsonFetch } from "./auth.js"; 
+import { jsonFetch } from "./auth.js";
 
 export function submitCourseware(userId, coursewareId) {
   return jsonFetch(
-    `${import.meta.env.VITE_API_BASE_URL}/users/${userId}/coursewares/${coursewareId}`,
+    `${process.env.VITE_API_BASE_URL}/users/${userId}/coursewares/${coursewareId}`,
     {
       method: "PUT",
     }
   );
 }
-

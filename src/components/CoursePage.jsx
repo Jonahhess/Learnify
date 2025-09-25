@@ -8,7 +8,7 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
   const [questions, setQuestions] = useState([]);
   const [finished, setFinished] = useState(false);
 
-  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+  const API = process.env.VITE_API_BASE_URL || "http://localhost:4000";
 
   async function loadQuestions(cw) {
     const fetched = [];
@@ -69,7 +69,9 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
     <Container py="xl">
       {!selectedCourseware ? (
         <>
-          <Title order={2} mb="md">{course.title}</Title>
+          <Title order={2} mb="md">
+            {course.title}
+          </Title>
           <Stack>
             {coursewares.map((cw) => (
               <Button

@@ -1,6 +1,6 @@
 import { jsonFetch } from "./auth";
 
-const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const API = process.env.VITE_API_BASE_URL || "http://localhost:4000";
 
 export function getCourses() {
   return jsonFetch(`${API}/courses`, {
