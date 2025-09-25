@@ -5,7 +5,6 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Restore user from localStorage on app load
   useEffect(() => {
     const saved = localStorage.getItem("user");
     if (saved) {

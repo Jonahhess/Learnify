@@ -22,7 +22,7 @@ import {
   IconUserPlus,
 } from "@tabler/icons-react";
 
-import classes from "./Sidebar.module.css"; // CSS Module for styling
+import classes from "./Sidebar.module.css"; 
 
 function NavIcon({ icon: Icon, label, onClick, active, color, children }) {
   return (
