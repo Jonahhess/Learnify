@@ -12,14 +12,14 @@ async function jsonFetch(url, options = {}) {
 }
 
 export function signup({ name, email, password }) {
-  return jsonFetch(`${API}/user`, {
+  return jsonFetch(`${API}/users`, {
     method: 'POST',
     body: JSON.stringify({ name, email, password }),
   });
 }
 
 export function login({ email, password }) {
-  return jsonFetch(`${API}/user/login`, {
+  return jsonFetch(`${API}/users/login`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });

@@ -3,6 +3,7 @@ import { Title, Text, Button, Group, Radio, Stack, Loader, Center } from "@manti
 import { getQuestionsByCourseware } from "../api/questions.js";
 import "./CoursewarePage.css";
 import { submitCourseware } from "../api/coursewares.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const pastelColors = [
   "#f8d7da",
@@ -69,6 +70,7 @@ export default function CoursewarePage({ courseware }) {
   const [score, setScore] = useState(null);
   const [wrongQuestions, setWrongQuestions] = useState([]);
   const [colorMap, setColorMap] = useState({});
+  const { user } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -143,7 +145,7 @@ export default function CoursewarePage({ courseware }) {
 
     if (finalScore >= 80) {
       try {
-        await submitCourseware(courseware._id);
+        await submitCourseware(user._id, courseware._id);
         console.log("✅ Courseware submitted successfully");
       } catch (err) {
         console.error("❌ Failed to submit courseware:", err);
