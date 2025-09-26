@@ -15,3 +15,13 @@ export function startCourse(userId, courseId) {
     }
   );
 }
+
+export function batchSubmitReviewCards(userId, reviewedCards) {
+  return jsonFetch(
+    `${import.meta.env.VITE_API_BASE_URL}/users/${userId}/reviewcards`,
+    {
+      method: "POST",
+      body: JSON.stringify({ reviewedCards }),
+    }
+  );
+}
