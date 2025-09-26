@@ -6,18 +6,17 @@ import {
   Center,
   Button,
   Group,
-  List,
-  ListItem,
 } from "@mantine/core";
 import { useAuth } from "../context/AuthContext.jsx";
 import CourseList from "./CourseList.jsx";
 import CoursewarePage from "./CoursewarePage.jsx";
+import CoursePage from "./CoursePage.jsx";
+import NewCoursePage from "./NewCoursePage.jsx"; // ✅ new component
 import { getCourses, getCoursewares } from "../api/courses.js";
-import { generateCoursewareFromTitle } from "../api/ai.js";
-import { IconCircleCheck } from "@tabler/icons-react";
+import { startCourse } from "../api/users.js";
 
 export default function LearnSystem() {
-  const { user } = useAuth();
+  const { user, reloadUser } = useAuth();
   const [allCourses, setAllCourses] = useState([]);
   const [coursewares, setCoursewares] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -45,35 +44,6 @@ export default function LearnSystem() {
     } finally {
       setLoading(false);
     }
-  }
-
-  async function handleSelectCourse(course) {
-    setLoading(true);
-    setSelectedCourse(course);
-
-    // Find the user's courseware for this course
-    const userCW = (user.myCurrentCoursewares || []).find(
-      (cw) => String(cw.courseId) === String(course.courseId)
-    );
-
-    // If courseware doesn't exist, generate it
-    if (!userCW?.coursewareId && userCW?.title) {
-      try {
-        await generateCoursewareFromTitle(
-          course.title,
-          course.courseId,
-          userCW.title
-        );
-        await loadData();
-        await reloadUser();
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-        return;
-      }
-    }
-
-    setLoading(false);
   }
 
   function getCurrentCourses() {
@@ -128,33 +98,53 @@ export default function LearnSystem() {
     );
   }
 
-  if (selectedCourse) {
-    const currentCW = getCurrentCoursewareForUser(selectedCourse.courseId);
-    return (
-      <Container size="lg" py="xl">
-        <Button
-          variant="subtle"
-          mb="md"
-          onClick={() => setSelectedCourse(null)}
-        >
-          ← Back to Courses
-        </Button>
-        <Title order={2} mb="md">
-          {selectedCourse.title}
-        </Title>
-        {currentCW ? (
-          <Button
-            onClick={() => setSelectedCourseware(currentCW)}
-            variant="light"
-          >
-            Start "{currentCW.title}"
-          </Button>
-        ) : (
-          <Title order={4}>No current courseware assigned</Title>
-        )}
-      </Container>
-    );
-  }
+ if (selectedCourse) {
+  const isCurrentCourse = (user.myCurrentCourses || []).some(
+    (c) => String(c.courseId) === String(selectedCourse.courseId)
+  );
+  console.log("1" + coursewares);
+  console.log("2" + selectedCourse);
+
+  return (
+    <Container size="lg" py="xl">
+      <Button
+        variant="subtle"
+        mb="md"
+        onClick={() => setSelectedCourse(null)}
+      >
+        ← Back to Courses
+      </Button>
+
+      {isCurrentCourse ? (
+        <CoursePage
+          course={selectedCourse}
+          coursewares={coursewares.filter(
+            (cw) => String(cw.courseId) === String(selectedCourse.courseId)
+          )}
+          user={user}
+          updateUser={reloadUser}
+        />
+      ) : (
+        <NewCoursePage
+          course={selectedCourse}
+          coursewares={coursewares.filter(
+            (cw) => String(cw.courseId) === String(selectedCourse.courseId)
+          )}
+          onStart={async () => {
+            try {
+              await startCourse(user._id, selectedCourse._id);
+              await reloadUser();
+              setShowNewCourses(false);
+              setSelectedCourse(null);
+            } catch (err) {
+              console.error("❌ Failed to start course:", err);
+            }
+          }}
+        />
+      )}
+    </Container>
+  );
+}
 
   return (
     <Container size="lg" py="xl">
@@ -173,7 +163,7 @@ export default function LearnSystem() {
       <CourseList
         courses={showNewCourses ? getAvailableCourses() : getCurrentCourses()}
         coursewares={coursewares}
-        onSelectCourse={(course) => handleSelectCourse(course)}
+        onSelectCourse={(course) => setSelectedCourse(course)}
       />
     </Container>
   );
