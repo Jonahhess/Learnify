@@ -8,7 +8,7 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
   const [questions, setQuestions] = useState([]);
   const [finished, setFinished] = useState(false);
 
-  const API = process.env.VITE_API_BASE_URL || "http://localhost:4000";
+  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
 
   async function loadQuestions(cw) {
     const fetched = [];

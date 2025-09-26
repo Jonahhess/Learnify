@@ -1,4 +1,4 @@
-const API = process.env.VITE_API_BASE_URL;
+const API = import.meta.env.VITE_API_BASE_URL;
 
 async function jsonFetch(url, options = {}) {
   const res = await fetch(url, {
