@@ -4,7 +4,7 @@ export function generateCourseOutlineFromTitle(title) {
   console.log(title);
   return jsonFetch(`${process.env.VITE_API_BASE_URL}/ai/outline/`, {
     method: "POST",
-    body: title,
+    body: JSON.stringify({ title }),
   });
 }
 
