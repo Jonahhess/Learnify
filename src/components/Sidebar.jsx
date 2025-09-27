@@ -66,7 +66,6 @@ export default function Sidebar() {
   return (
     <>
       <nav className={classes.navbar}>
-        {/* Top: Home */}
         <Center>
           <NavIcon
             icon={IconHome2}
@@ -76,7 +75,6 @@ export default function Sidebar() {
           />
         </Center>
 
-        {/* Main links */}
         <div className={classes.navbarMain}>
           <Stack justify="center" gap={0}>
             {mainLinks.map(({ icon, label, to }) => (
@@ -91,21 +89,18 @@ export default function Sidebar() {
           </Stack>
         </div>
 
-        {/* Bottom actions */}
         <Stack justify="center" gap={0}>
           {isAuthed ? (
             <>
-              {/* Profile button with avatar */}
               <NavIcon
                 label={user?.name || "Profile"}
-                onClick={() => setProfileOpen(true)} // 👈 open drawer
+                onClick={() => setProfileOpen(true)}
               >
                 <Avatar radius="xl" size={28}>
                   {user?.name ? user.name[0] : "?"}
                 </Avatar>
               </NavIcon>
 
-              {/* Logout */}
               <NavIcon
                 icon={IconLogout}
                 label="Log out"
@@ -130,7 +125,6 @@ export default function Sidebar() {
         </Stack>
       </nav>
 
-      {/* Drawer that slides in from the right */}
       <Drawer
         opened={profileOpen}
         onClose={() => setProfileOpen(false)}

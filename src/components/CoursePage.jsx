@@ -1,26 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Container, Title, Button, Stack } from "@mantine/core";
 import CoursewarePlayer from "./CoursewarePlayer.jsx";
 import CourseSummary from "./CourseSummary.jsx";
 
 export default function CoursePage({ course, coursewares, user, updateUser }) {
   const [selectedCourseware, setSelectedCourseware] = useState(null);
-  const [questions, setQuestions] = useState([]);
   const [finished, setFinished] = useState(false);
-
-  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-
-  async function loadQuestions(cw) {
-    const fetched = [];
-    for (const q of cw.quiz) {
-      const res = await fetch(`${API}/questions/${q.questionId}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      fetched.push(data);
-    }
-    setQuestions(fetched);
-  }
 
   function handleComplete(passed) {
     if (!passed) return;
@@ -32,10 +17,12 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
     };
 
     const updatedUser = { ...user };
+
     updatedUser.myCompletedCoursewares = [
       ...(user.myCompletedCoursewares || []),
       completedCW,
     ];
+
     updatedUser.myCurrentCoursewares = (user.myCurrentCoursewares || []).filter(
       (cw) => cw.coursewareId !== selectedCourseware.coursewareId
     );
@@ -53,7 +40,6 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
         index: nextCW.index,
       });
       setSelectedCourseware(nextCW);
-      loadQuestions(nextCW);
     } else {
       setFinished(true);
     }
@@ -75,12 +61,9 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
           <Stack>
             {coursewares.map((cw) => (
               <Button
-                key={cw.coursewareId}
+                key={cw._id}
                 variant="light"
-                onClick={() => {
-                  setSelectedCourseware(cw);
-                  loadQuestions(cw);
-                }}
+                onClick={() => setSelectedCourseware(cw)}
               >
                 {cw.title}
               </Button>
@@ -90,7 +73,6 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
       ) : (
         <CoursewarePlayer
           courseware={selectedCourseware}
-          questions={questions}
           onComplete={handleComplete}
         />
       )}
