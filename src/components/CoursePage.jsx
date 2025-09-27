@@ -1,26 +1,18 @@
-import { useState, useEffect } from "react";
-import { Container, Title, Button, Stack } from "@mantine/core";
+import { useState } from "react";
+import { Container, Title, Text, Stack, Button } from "@mantine/core";
 import CoursewarePlayer from "./CoursewarePlayer.jsx";
 import CourseSummary from "./CourseSummary.jsx";
+import CoursewareList from "./CoursewareList.jsx";
 
 export default function CoursePage({ course, coursewares, user, updateUser }) {
   const [selectedCourseware, setSelectedCourseware] = useState(null);
-  const [questions, setQuestions] = useState([]);
   const [finished, setFinished] = useState(false);
 
-  const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-
-  async function loadQuestions(cw) {
-    const fetched = [];
-    for (const q of cw.quiz) {
-      const res = await fetch(`${API}/questions/${q.questionId}`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      fetched.push(data);
-    }
-    setQuestions(fetched);
-  }
+  // currentIndex = from user progress
+  const currentCW = (user.myCurrentCoursewares || []).find(
+    (cw) => String(cw.courseId) === String(course.courseId)
+  );
+  const currentIndex = currentCW ? currentCW.index : 0;
 
   function handleComplete(passed) {
     if (!passed) return;
@@ -32,10 +24,12 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
     };
 
     const updatedUser = { ...user };
+
     updatedUser.myCompletedCoursewares = [
       ...(user.myCompletedCoursewares || []),
       completedCW,
     ];
+
     updatedUser.myCurrentCoursewares = (user.myCurrentCoursewares || []).filter(
       (cw) => cw.coursewareId !== selectedCourseware.coursewareId
     );
@@ -53,7 +47,6 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
         index: nextCW.index,
       });
       setSelectedCourseware(nextCW);
-      loadQuestions(nextCW);
     } else {
       setFinished(true);
     }
@@ -72,25 +65,25 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
           <Title order={2} mb="md">
             {course.title}
           </Title>
-          <Stack>
-            {coursewares.map((cw) => (
-              <Button
-                key={cw.coursewareId}
-                variant="light"
-                onClick={() => {
-                  setSelectedCourseware(cw);
-                  loadQuestions(cw);
-                }}
-              >
-                {cw.title}
+
+          {coursewares.length > 0 ? (
+            <CoursewareList
+              coursewares={coursewares}
+              currentIndex={currentIndex}
+              onSelect={setSelectedCourseware}
+            />
+          ) : (
+            <Stack>
+              <Text c="dimmed">No coursewares available for this course yet.</Text>
+              <Button color="blue" variant="outline">
+                Generate new courseware for this course
               </Button>
-            ))}
-          </Stack>
+            </Stack>
+          )}
         </>
       ) : (
         <CoursewarePlayer
           courseware={selectedCourseware}
-          questions={questions}
           onComplete={handleComplete}
         />
       )}

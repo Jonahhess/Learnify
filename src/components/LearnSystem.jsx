@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
-import { Container, Title, Loader, Center, Button, Group } from "@mantine/core";
+import {
+  Container,
+  Title,
+  Loader,
+  Center,
+  Button,
+  Group,
+  TextInput,
+} from "@mantine/core";
 import { useAuth } from "../context/AuthContext.jsx";
 import CourseList from "./CourseList.jsx";
-import CoursewarePage from "./CoursewarePage.jsx";
-import { getCourses, getCoursewares } from "../api/courses.js";
-import { generateCoursewareFromTitle } from "../api/ai.js";
+import CoursePage from "./CoursePage.jsx";
+import NewCoursePage from "./NewCoursePage.jsx";
+import { getCourses, getCoursewares, getCourseById } from "../api/courses.js";
+import { startCourse } from "../api/users.js";
+import { generateCourseOutline } from "../api/ai.js";
 
 export default function LearnSystem() {
-  const { user } = useAuth();
+  const { user, reloadUser } = useAuth();
   const [allCourses, setAllCourses] = useState([]);
   const [coursewares, setCoursewares] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedCourseware, setSelectedCourseware] = useState(null);
+  const [selectedNewCourse, setSelectedNewCourse] = useState(null);
   const [showNewCourses, setShowNewCourses] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [newCoursewares, setNewCoursewares] = useState([]);
+  const [newTitle, setNewTitle] = useState("");
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -37,38 +50,18 @@ export default function LearnSystem() {
     }
   }
 
-  async function handleSelectCourse(course) {
-    console.log(course);
-    setLoading(true);
-    setSelectedCourse(course);
-
-    // Find the user's courseware for this course
-    const userCW = (user.myCurrentCoursewares || []).find(
-      (cw) => String(cw.courseId) === String(course.courseId)
-    );
-
-    // If courseware doesn't exist, generate it
-    if (!userCW?.coursewareId && userCW?.title) {
-      try {
-        await generateCoursewareFromTitle(
-          course.title,
-          course.courseId,
-          userCW.title
-        );
-        await loadData();
-        await reloadUser();
-      } catch (err) {
-        console.error(err);
-        setLoading(false);
-        return;
-      }
-    }
-
-    setLoading(false);
-  }
-
   function getCurrentCourses() {
     return user.myCurrentCourses || [];
+  }
+
+  async function getCourseTitles(courseId) {
+    try {
+      const course = await getCourseById(courseId);
+      return course.coursewares || [];
+    } catch (err) {
+      console.error("Failed to fetch course titles:", err);
+      return [];
+    }
   }
 
   function getAvailableCourses() {
@@ -78,14 +71,19 @@ export default function LearnSystem() {
     return allCourses.filter((c) => !currentIds.includes(String(c._id)));
   }
 
-  function getCurrentCoursewareForUser(courseId) {
-    const currentCW = (user.myCurrentCoursewares || []).find(
-      (cw) => String(cw.courseId) === String(courseId)
-    );
-    if (!currentCW) return null;
-    return coursewares.find(
-      (cw) => String(cw._id) === String(currentCW.coursewareId)
-    );
+  async function handleGenerateCourse() {
+    if (!newTitle.trim()) return;
+    try {
+      setCreating(true);
+      const newCourse = await generateCourseOutline({ title: newTitle });
+      setAllCourses((prev) => [...prev, newCourse]);
+      setNewTitle("");
+      setShowNewCourses(true);
+    } catch (err) {
+      console.error("Failed to generate course:", err);
+    } finally {
+      setCreating(false);
+    }
   }
 
   if (!user) {
@@ -104,49 +102,57 @@ export default function LearnSystem() {
     );
   }
 
-  if (selectedCourseware) {
+  // ---- Current Course Selected ----
+  if (selectedCourse) {
     return (
       <Container size="lg" py="xl">
-        <Button
-          variant="subtle"
-          mb="md"
-          onClick={() => setSelectedCourseware(null)}
-        >
-          ← Back to Course
+        <Button variant="subtle" mb="md" onClick={() => setSelectedCourse(null)}>
+          ← Back to Courses
         </Button>
-        <CoursewarePage courseware={selectedCourseware} />
+
+        <CoursePage
+          course={selectedCourse}
+          coursewares={coursewares.filter(
+            (cw) => String(cw.courseId) === String(selectedCourse.courseId)
+          )}
+          user={user}
+          updateUser={reloadUser}
+        />
       </Container>
     );
   }
 
-  if (selectedCourse) {
-    const currentCW = getCurrentCoursewareForUser(selectedCourse.courseId);
+  // ---- New Course Selected ----
+  if (selectedNewCourse) {
     return (
       <Container size="lg" py="xl">
         <Button
           variant="subtle"
           mb="md"
-          onClick={() => setSelectedCourse(null)}
+          onClick={() => setSelectedNewCourse(null)}
         >
           ← Back to Courses
         </Button>
-        <Title order={2} mb="md">
-          {selectedCourse.title}
-        </Title>
-        {currentCW ? (
-          <Button
-            onClick={() => setSelectedCourseware(currentCW)}
-            variant="light"
-          >
-            Start "{currentCW.title}"
-          </Button>
-        ) : (
-          <Title order={4}>No current courseware assigned</Title>
-        )}
+
+        <NewCoursePage
+          course={selectedNewCourse}
+          coursewares={newCoursewares}
+          onStart={async () => {
+            try {
+              await startCourse(user._id, selectedNewCourse._id);
+              await reloadUser();
+              setShowNewCourses(false);
+              setSelectedNewCourse(null);
+            } catch (err) {
+              console.error("Failed to start course:", err);
+            }
+          }}
+        />
       </Container>
     );
   }
 
+  // ---- Main Courses List ----
   return (
     <Container size="lg" py="xl">
       <Group justify="space-between" mb="md">
@@ -164,8 +170,32 @@ export default function LearnSystem() {
       <CourseList
         courses={showNewCourses ? getAvailableCourses() : getCurrentCourses()}
         coursewares={coursewares}
-        onSelectCourse={(course) => handleSelectCourse(course)}
+        isNew={showNewCourses}
+        onSelectCourse={async (course) => {
+          if (showNewCourses) {
+            const cw = await getCourseTitles(course._id);
+            setNewCoursewares(cw);
+            setSelectedNewCourse(course);
+          } else {
+            setSelectedCourse(course);
+          }
+        }}
       />
+
+
+      {showNewCourses && (
+        <Group mt="lg">
+          <TextInput
+            placeholder="Enter course title..."
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.currentTarget.value)}
+            style={{ flex: 1 }}
+          />
+          <Button onClick={handleGenerateCourse} loading={creating}>
+            Generate Course
+          </Button>
+        </Group>
+      )}
     </Container>
   );
 }
