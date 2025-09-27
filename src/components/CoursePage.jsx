@@ -1,11 +1,18 @@
 import { useState } from "react";
-import { Container, Title, Button, Stack } from "@mantine/core";
+import { Container, Title, Text, Stack, Button } from "@mantine/core";
 import CoursewarePlayer from "./CoursewarePlayer.jsx";
 import CourseSummary from "./CourseSummary.jsx";
+import CoursewareList from "./CoursewareList.jsx";
 
 export default function CoursePage({ course, coursewares, user, updateUser }) {
   const [selectedCourseware, setSelectedCourseware] = useState(null);
   const [finished, setFinished] = useState(false);
+
+  // currentIndex = from user progress
+  const currentCW = (user.myCurrentCoursewares || []).find(
+    (cw) => String(cw.courseId) === String(course.courseId)
+  );
+  const currentIndex = currentCW ? currentCW.index : 0;
 
   function handleComplete(passed) {
     if (!passed) return;
@@ -58,17 +65,21 @@ export default function CoursePage({ course, coursewares, user, updateUser }) {
           <Title order={2} mb="md">
             {course.title}
           </Title>
-          <Stack>
-            {coursewares.map((cw) => (
-              <Button
-                key={cw._id}
-                variant="light"
-                onClick={() => setSelectedCourseware(cw)}
-              >
-                {cw.title}
+
+          {coursewares.length > 0 ? (
+            <CoursewareList
+              coursewares={coursewares}
+              currentIndex={currentIndex}
+              onSelect={setSelectedCourseware}
+            />
+          ) : (
+            <Stack>
+              <Text c="dimmed">No coursewares available for this course yet.</Text>
+              <Button color="blue" variant="outline">
+                Generate new courseware for this course
               </Button>
-            ))}
-          </Stack>
+            </Stack>
+          )}
         </>
       ) : (
         <CoursewarePlayer

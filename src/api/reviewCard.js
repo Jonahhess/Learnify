@@ -10,10 +10,10 @@ export function getReviewCardById(id) {
   return jsonFetch(`${API}/review-cards/${id}`, { method: "GET" });
 }
 
-export function updateReviewCard(id, body) {
+export function updateReviewCard(id, success) {
   return jsonFetch(`${API}/review-cards/${id}`, {
     method: "PUT",
-    body: JSON.stringify(body),
+    body: JSON.stringify({ success }),
   });
 }
 

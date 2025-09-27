@@ -1,4 +1,4 @@
-// ReviewCard.jsx
+// ReviewCardAI.jsx
 import { Card, Text, Button, Group, Badge, Stack } from "@mantine/core";
 import { useState } from "react";
 
@@ -15,25 +15,11 @@ export default function ReviewCard({ card, onAnswered }) {
     const success = answer === card.question.correctAnswer;
     setCorrect(success);
     setAnswered(true);
-
-    // tell parent result (_id + success flag)
-    onAnswered?.({ _id: card._id, success: success ? 1 : 0 });
+    onAnswered?.({ questionId: card.question._id, success });
   };
 
   return (
-    <Card
-      shadow="sm"
-      radius="md"
-      withBorder
-      style={{
-        backgroundColor: answered
-          ? correct
-            ? "#d4edda"
-            : "#f8d7da"
-          : "white",
-        transition: "background-color 0.3s ease",
-      }}
-    >
+    <Card shadow="sm" radius="md" withBorder>
       <Stack gap="sm">
         <Group justify="space-between">
           <Text fw={500}>{card.question.questionText}</Text>
@@ -43,18 +29,17 @@ export default function ReviewCard({ card, onAnswered }) {
         </Group>
 
         {!answered ? (
-          <Stack>
+          <Group grow>
             {answers.map((ans) => (
               <Button
                 key={ans}
                 onClick={() => handleAnswer(ans)}
                 variant="light"
-                w="100%"
               >
                 {ans}
               </Button>
             ))}
-          </Stack>
+          </Group>
         ) : (
           <Text c={correct ? "green" : "red"}>
             {correct
@@ -62,6 +47,11 @@ export default function ReviewCard({ card, onAnswered }) {
               : "❌ Wrong. Correct: " + card.question.correctAnswer}
           </Text>
         )}
+
+        <Group justify="space-between">
+          <Text size="sm">Reviews: {card.reviews}</Text>
+          <Text size="sm">Successes: {card.successes}</Text>
+        </Group>
       </Stack>
     </Card>
   );

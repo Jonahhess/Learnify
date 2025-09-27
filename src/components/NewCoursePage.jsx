@@ -1,28 +1,35 @@
-import { Container, Title, Button, Stack, Text } from "@mantine/core";
+import { Container, Title, Timeline, Text, Button, Center } from "@mantine/core";
 
 export default function NewCoursePage({ course, coursewares, onStart }) {
   return (
-    <Container py="xl">
-      <Title order={2} mb="md">
+    <Container size="lg" py="xl">
+      <Title order={2} mb="lg">
         {course.title}
       </Title>
 
-      <Title order={4} mb="sm">
-        Course Syllabus:
-      </Title>
-      <Stack mb="xl">
-        {coursewares.length > 0 ? (
-          coursewares.map((cw) => (
-            <Text key={cw._id || cw.coursewareId} size="sm">
-              • {cw.title}
-            </Text>
-          ))
-        ) : (
-          <Text c="dimmed">No coursewares available yet.</Text>
-        )}
-      </Stack>
+      {coursewares && coursewares.length > 0 ? (
+        <Timeline active={-1} bulletSize={24} lineWidth={2}>
+          {coursewares.map((cw, i) => (
+            <Timeline.Item
+              key={cw._id || i}
+              title={cw.title}
+              bullet={<span>{i + 1}</span>}
+            >
+              <Text c="dimmed" size="sm">
+                Module {i + 1}
+              </Text>
+            </Timeline.Item>
+          ))}
+        </Timeline>
+      ) : (
+        <Center my="xl">
+          <Text c="dimmed" size="sm">
+            Generate new courseware for this course
+          </Text>
+        </Center>
+      )}
 
-      <Button color="green" onClick={onStart}>
+      <Button mt="xl" fullWidth color="blue" onClick={onStart}>
         Start Course
       </Button>
     </Container>

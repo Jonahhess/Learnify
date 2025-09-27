@@ -1,12 +1,38 @@
-import { SimpleGrid } from "@mantine/core";
-import CoursewareCard from "./CoursewareCard.jsx";
+import { Stack, Button } from "@mantine/core";
 
-export default function CoursewareList({ coursewares }) {
+export default function CoursewareList({ coursewares, currentIndex, onSelect }) {
   return (
-    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-      {coursewares.map((cw) => (
-        <CoursewareCard key={cw._id} courseware={cw} />
-      ))}
-    </SimpleGrid>
+    <Stack>
+      {coursewares.map((cw, idx) => {
+        const isCurrent = idx === currentIndex;
+        const isCompleted = idx < currentIndex;
+        const isFuture = idx > currentIndex;
+
+        let color = "gray";
+        let disabled = true;
+
+        if (isCompleted) {
+          color = "green"; 
+        } else if (isCurrent) {
+          color = "blue"; 
+          disabled = false; 
+        } else if (isFuture) {
+          color = "gray"; 
+        }
+
+        return (
+          <Button
+            key={cw._id || idx}
+            fullWidth
+            color={color}
+            variant="light"
+            disabled={disabled}
+            onClick={() => isCurrent && onSelect(cw)}
+          >
+            {cw.title}
+          </Button>
+        );
+      })}
+    </Stack>
   );
 }
