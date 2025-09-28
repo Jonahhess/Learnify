@@ -10,6 +10,10 @@ export default function Review() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user, reloadUser } = useAuth();
+  
+  useEffect(() => {
+    reloadUser();
+  }, []);
 
   useEffect(() => {
     if (user?.myReviewCards) {

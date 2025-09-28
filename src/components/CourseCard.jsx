@@ -1,26 +1,34 @@
+import { useState, useEffect } from "react";
 import { Card, Text, Progress } from "@mantine/core";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getCourseById } from "../api/courses.js";
 
 export default function CourseCard({ course, coursewares, onClick, isNew }) {
   const { user } = useAuth();
+  const [courseTitles, setCourseTitles] = useState([]);
 
+  useEffect(() => {
+    async function loadCourseTitles() {
+      try {
+        const data = await getCourseById(course.courseId);
+        setCourseTitles(data.coursewares || []);
+      } catch (err) {
+        console.error("Failed to fetch course titles:", err);
+      }
+    }
 
-  console.log(coursewares);
-  console.log(course);
-  
-  // All coursewares that belong to this course
-  const courseCoursewares = coursewares.filter(
+    if (!isNew) {
+      loadCourseTitles();
+    }
+  }, [course.courseId, isNew]);
+
+  const currentCW = (user.myCurrentCoursewares || []).find(
     (cw) => String(cw.courseId) === String(course.courseId)
   );
 
-  // currentIndex = from user progress
-  const currentCW = (user.myCurrentCoursewares || []).find(
-    (cw) => String(cw.courseId) === String(course.courseId) // ✅ not course._id
-  );
-
-  const total = coursewares.length || 1;
+  const total = courseTitles.length;
   const index = currentCW ? currentCW.index : 0;
-  const progress = Math.round(((index) / total) * 100);
+  const progress = Math.round((index / total) * 100);
 
   return (
     <Card
